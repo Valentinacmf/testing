@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Thank you</title>
 <style>
   * { box-sizing: border-box; }
@@ -97,6 +98,15 @@
     text-decoration: none;
   }
   .back-link:hover { color: #131A22; text-decoration: underline; }
+  @media (max-width: 640px) {
+    body { padding: 24px 16px; }
+    .card { padding: 32px 24px; }
+    .checkmark { width: 56px; height: 56px; font-size: 28px; margin-bottom: 20px; }
+    h1 { font-size: 24px; }
+    p.intro { font-size: 15px; margin-bottom: 22px; }
+    textarea { min-height: 100px; font-size: 14px; }
+    .submit { width: 100%; }
+  }
 </style>
 </head>
 <body>

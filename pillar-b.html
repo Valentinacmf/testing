@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Product B</title>
 <style>
   * { box-sizing: border-box; }
@@ -40,6 +41,26 @@
   .delivery-text { color: #007185; font-weight: 600; }
   .add-to-cart { display: block; width: 100%; background: #FFD814; color: #0F1111; border: 1px solid #FCD200; padding: 14px; border-radius: 999px; font-size: 16px; font-weight: 500; cursor: pointer; margin-bottom: 22px; }
   .subtitle-below-cta { font-size: 16px; color: #333; line-height: 1.6; margin: 0; }
+  @media (max-width: 640px) {
+    body { padding: 24px 16px; }
+    .page-header h1 { font-size: 26px; }
+    .page-header .back-link { margin-bottom: 16px; }
+    .pillar-row { margin-top: 24px; }
+    .pdp { border-radius: 8px; }
+    .amazon-header { padding: 10px 14px; gap: 10px; }
+    .amazon-logo { font-size: 20px; }
+    .amazon-logo sup { font-size: 10px; }
+    .search-bar { height: 32px; }
+    .cart { font-size: 12px; }
+    .cart-icon { font-size: 16px; }
+    .breadcrumb { padding: 10px 16px; font-size: 12px; }
+    .product-body { grid-template-columns: 1fr; gap: 20px; padding: 20px; }
+    .product-image { max-width: 280px; margin: 0 auto; font-size: 90px; }
+    .product-info h2 { font-size: 22px; }
+    .price { font-size: 26px; }
+    .add-to-cart { padding: 12px; font-size: 15px; }
+    .subtitle-below-cta { font-size: 14px; }
+  }
 </style>
 </head>
 <body>
