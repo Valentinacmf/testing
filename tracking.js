@@ -1,8 +1,13 @@
 (function () {
-  // PASTE YOUR APPS SCRIPT WEB APP URL HERE (see apps-script.gs for setup):
   const ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbx7LeUfVazJWeOd6iEdgHNRxhROpypW7kX0B1SPUQz1sdkkJqca8JV5ARUoXPEmRaqH/exec';
 
+  // Skip obvious bots and link-preview crawlers entirely.
+  const ua = navigator.userAgent || '';
+  const BOT_RE = /bot|crawl|spider|scraper|headless|lighthouse|preview|facebookexternalhit|whatsapp|slackbot|telegram|discord|phantomjs|selenium|puppeteer|playwright|pingdom|gtmetrix|monitor/i;
+  if (BOT_RE.test(ua)) return;
+
   const SESSION_KEY = 'pillar_test_session_id';
+  const ENGAGED_KEY = 'pillar_test_engaged';
   const page = location.pathname.split('/').pop() || 'index.html';
   const loadTime = Date.now();
 
@@ -12,11 +17,13 @@
     localStorage.setItem(SESSION_KEY, sessionId);
   }
 
-  function send(event, useBeacon) {
-    if (!ENDPOINT_URL || ENDPOINT_URL.startsWith('PASTE_')) {
-      console.warn('[tracking] ENDPOINT_URL not configured');
-      return;
-    }
+  // Engagement gate: don't write anything to the sheet until the user proves
+  // they're real by clicking. Buffer events client-side; flush on first click.
+  // Once engaged, the flag persists in localStorage so later pages send normally.
+  let engaged = localStorage.getItem(ENGAGED_KEY) === '1';
+  const queue = [];
+
+  function actuallySend(event, useBeacon) {
     const payload = JSON.stringify(event);
     if (useBeacon && navigator.sendBeacon) {
       const blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' });
@@ -32,25 +39,42 @@
     }
   }
 
+  function dispatch(event, useBeacon) {
+    if (engaged) {
+      actuallySend(event, useBeacon);
+    } else {
+      queue.push({ event, useBeacon });
+    }
+  }
+
+  function markEngaged() {
+    if (engaged) return;
+    engaged = true;
+    localStorage.setItem(ENGAGED_KEY, '1');
+    queue.forEach(item => actuallySend(item.event, item.useBeacon));
+    queue.length = 0;
+  }
+
   function baseEvent(type) {
     return {
       type,
       sessionId,
       page,
       timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
+      userAgent: ua,
     };
   }
 
-  send(Object.assign(baseEvent('pageview'), {
+  dispatch(Object.assign(baseEvent('pageview'), {
     referrer: document.referrer || null,
     viewport: window.innerWidth + 'x' + window.innerHeight,
   }));
 
   document.addEventListener('click', function (e) {
+    markEngaged();
     const target = e.target.closest('a, button, [class]') || e.target;
     const link = e.target.closest('a');
-    send(Object.assign(baseEvent('click'), {
+    dispatch(Object.assign(baseEvent('click'), {
       tag: target.tagName,
       classes: target.className || null,
       id: target.id || null,
@@ -60,14 +84,14 @@
   }, true);
 
   window.addEventListener('beforeunload', function () {
-    send(Object.assign(baseEvent('pageexit'), {
+    dispatch(Object.assign(baseEvent('pageexit'), {
       timeOnPageMs: Date.now() - loadTime,
     }), true);
   });
 
   window.PillarTracking = {
     track: function (type, extra) {
-      send(Object.assign(baseEvent(type), extra || {}));
+      dispatch(Object.assign(baseEvent(type), extra || {}));
     },
   };
 })();
